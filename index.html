@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PronosFoot • Espace Pronostics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Outfit', sans-serif; }
+        #auth-section { display: block; }
+        #app-section { display: none; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .dark .glass-card { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); }
+        html:not(.dark) .glass-card { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.08); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
+        .avatar-option.selected { border-color: #10b981; background-color: rgba(16, 185, 129, 0.15); transform: scale(1.05); }
+    </style>
+</head>
+<body class="bg-slate-950 dark:bg-slate-950 text-slate-100 dark:text-slate-100 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-200" id="body-root">
+
+    <!-- HEADER PRO -->
+    <header class="glass-card sticky top-0 z-40 border-b border-slate-800/80 dark:border-slate-800/80 py-4 px-6 flex justify-between items-center shadow-xl">
+        <div class="flex items-center space-x-3">
+            <div class="bg-gradient-to-tr from-emerald-600 to-emerald-400 p-2.5 rounded-xl shadow-lg shadow-emerald-500/20">
+                <i class="fa-solid fa-futbol text-slate-950 text-xl"></i>
+            </div>
+            <div>
+                <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Pronos<span class="text-emerald-500 dark:text-emerald-400">Foot</span></span>
+                <span class="block text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest font-semibold">Ligue Privée</span>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <!-- BOUTON BASCULE THÈME CLAIR / SOMBRE -->
+            <button onclick="toggleTheme()" class="bg-slate-200 dark:bg-slate-900/80 hover:bg-slate-300 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 w-10 h-10 rounded-xl border border-slate-300 dark:border-slate-700 transition flex items-center justify-center shadow-sm" title="Changer de thème">
+                <i id="theme-icon" class="fa-solid fa-moon text-sm"></i>
+            </button>
+
+            <div id="user-info" class="hidden flex items-center space-x-3">
+                <div class="relative">
+                    <button onclick="toggleNotificationsModal()" class="relative bg-slate-200 dark:bg-slate-900/80 hover:bg-slate-300 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 w-10 h-10 rounded-xl border border-slate-300 dark:border-slate-700 transition flex items-center justify-center shadow-sm">
+                        <i class="fa-solid fa-bell text-sm"></i>
+                        <span id="notif-badge" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-md">0</span>
+                    </button>
+                </div>
+
+                <div class="flex items-center space-x-2.5 bg-slate-200/80 dark:bg-slate-900/80 py-1.5 px-3 rounded-2xl border border-slate-300 dark:border-slate-800">
+                    <div id="header-avatar-container" class="w-8 h-8 rounded-xl bg-slate-300 dark:bg-slate-800 flex items-center justify-center text-lg border border-slate-400 dark:border-slate-700 shadow-inner overflow-hidden">
+                        <span id="header-avatar-emoji">⚽</span>
+                        <img id="header-avatar-img" class="w-full h-full object-cover hidden" alt="Avatar">
+                    </div>
+                    <div class="hidden sm:flex flex-col text-left">
+                        <span id="display-pseudo" class="text-xs font-bold text-emerald-600 dark:text-emerald-300"></span>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400">Membre actif</span>
+                    </div>
+                </div>
+                <button onclick="logout()" class="bg-slate-200 dark:bg-slate-800 hover:bg-rose-500/20 hover:text-rose-500 dark:hover:text-rose-400 text-slate-700 dark:text-slate-300 text-xs font-semibold px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-power-off"></i>
+                    <span class="hidden sm:inline">Quitter</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8 max-w-4xl">
+
+        <!-- SECTION AUTHENTIFICATION -->
+        <section id="auth-section" class="max-w-md mx-auto glass-card p-8 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 mt-6">
+            <div class="text-center mb-8">
+                <div class="inline-flex bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-3 rounded-2xl mb-3 border border-emerald-500/20">
+                    <i class="fa-solid fa-shield-halved text-2xl"></i>
+                </div>
+                <h2 id="auth-title" class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Connexion</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Accédez à vos pronostics et au classement général</p>
+            </div>
+            
+            <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
+                <div id="pseudo-group" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">Pseudo</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" id="pseudo" class="w-full bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition" placeholder="Votre pseudo">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">Choisissez un avatar ou une photo</label>
+                        <div class="grid grid-cols-5 gap-2.5 mb-3" id="avatar-selection">
+                            <div onclick="selectAvatar('🦁')" class="avatar-option selected cursor-pointer bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-2xl p-2.5 text-center text-2xl transition hover:border-emerald-500">🦁</div>
+                            <div onclick="selectAvatar('🦅')" class="avatar-option cursor-pointer bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-2xl p-2.5 text-center text-2xl transition hover:border-emerald-500">🦅</div>
+                            <div onclick="selectAvatar('⚡')" class="avatar-option cursor-pointer bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-2xl p-2.5 text-center text-2xl transition hover:border-emerald-500">⚡</div>
+                            <div onclick="selectAvatar('🔥')" class="avatar-option cursor-pointer bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-2xl p-2.5 text-center text-2xl transition hover:border-emerald-500">🔥</div>
+                            <div onclick="selectAvatar('👑')" class="avatar-option cursor-pointer bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-2xl p-2.5 text-center text-2xl transition hover:border-emerald-500">👑</div>
+                            <div onclick="selectAvatar('⚽')" class="avatar-option cursor-pointer bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-2xl p-2.5 text-center text-2xl transition hover:border-emerald-500">⚽</div>
+                            <div onclick="selectAvatar('⭐')" class="avatar-option cursor-pointer bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-2xl p-2.5 text-center text-2xl transition hover:border-emerald-500">⭐</div>
+                            <div onclick="selectAvatar('🎯')" class="avatar-option cursor-pointer bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-2xl p-2.5 text-center text-2xl transition hover:border-emerald-500">🎯</div>
+                            <div onclick="selectAvatar('🚀')" class="avatar-option cursor-pointer bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-2xl p-2.5 text-center text-2xl transition hover:border-emerald-500">🚀</div>
+                            <div onclick="selectAvatar('🦊')" class="avatar-option cursor-pointer bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-2xl p-2.5 text-center text-2xl transition hover:border-emerald-500">🦊</div>
+                        </div>
+                        
+                        <div class="relative">
+                            <input type="file" id="custom-photo-input" accept="image/*" onchange="handleCustomPhoto(event)" class="hidden">
+                            <label for="custom-photo-input" class="w-full bg-slate-100 dark:bg-slate-900/80 hover:bg-slate-200 dark:hover:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 rounded-xl py-2.5 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-center space-x-2 cursor-pointer transition">
+                                <i class="fa-solid fa-camera text-emerald-500 dark:text-emerald-400"></i>
+                                <span id="photo-label-text">Importer une photo de profil</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">Email</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-envelope"></i></span>
+                        <input type="email" id="email" required class="w-full bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition" placeholder="votre@email.com">
+                    </div>
+                </div>
+                <div id="password-container">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">Mot de passe</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="password" required class="w-full bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition" placeholder="••••••••">
+                    </div>
+                </div>
+                <div id="confirm-password-group" class="hidden">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">Confirmer le mot de passe</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" id="confirm-password" class="w-full bg-slate-100 dark:bg-slate-900/90 border border-slate-300 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition" placeholder="••••••••">
+                    </div>
+                </div>
+                <button type="submit" id="auth-btn" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3.5 rounded-xl transition shadow-lg shadow-emerald-500/20 mt-2">Se connecter</button>
+            </form>
+
+            <div class="flex flex-col sm:flex-row justify-between items-center text-xs mt-6 gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition font-medium">Pas de compte ? S'inscrire</button>
+                <button onclick="forgotPassword()" id="forgot-password-btn" class="text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition font-medium">Mot de passe oublié ?</button>
+            </div>
+        </section>
+
+        <!-- SECTION APPLICATION -->
+        <section id="app-section" class="hidden space-y-6">
+            <div class="flex justify-center space-x-1.5 glass-card p-2 rounded-2xl max-w-2xl mx-auto shadow-lg flex-wrap gap-1">
+                <button onclick="switchMainTab('matches')" id="main-tab-matches" class="flex-1 min-w-[60px] py-2 px-2 rounded-xl font-semibold text-xs tracking-wide transition bg-emerald-500 text-slate-950 shadow-md">Matchs</button>
+                <button onclick="switchMainTab('leaderboard')" id="main-tab-leaderboard" class="flex-1 min-w-[60px] py-2 px-2 rounded-xl font-semibold text-xs tracking-wide transition text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Classement</button>
+                <button onclick="switchMainTab('winner')" id="main-tab-winner" class="hidden flex-1 min-w-[60px] py-2 px-2 rounded-xl font-semibold text-xs tracking-wide transition text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Vainqueur</button>
+                <button onclick="switchMainTab('archives')" id="main-tab-archives" class="flex-1 min-w-[60px] py-2 px-2 rounded-xl font-semibold text-xs tracking-wide transition text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Archives</button>
+                <button onclick="switchMainTab('stats')" id="main-tab-stats" class="flex-1 min-w-[60px] py-2 px-2 rounded-xl font-semibold text-xs tracking-wide transition text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Stats</button>
+                <button onclick="switchMainTab('chat')" id="main-tab-chat" class="flex-1 min-w-[60px] py-2 px-2 rounded-xl font-semibold text-xs tracking-wide transition text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Salon</button>
+                <button onclick="switchMainTab('profile')" id="main-tab-profile" class="flex-1 min-w-[60px] py-2 px-2 rounded-xl font-semibold text-xs tracking-wide transition text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">Profil</button>
+                <button onclick="switchMainTab('admin')" id="main-tab-admin" class="hidden flex-1 min-w-[60px] py-2 px-2 rounded-xl font-semibold text-xs tracking-wide transition text-amber-600 dark:text-amber-400 hover:text-amber-500 dark:hover:text-amber-300">Admin</button>
+            </div>
+
+            <!-- ONGLET MATCHS -->
+            <div id="content-matches" class="space-y-5">
+                <div class="flex flex-col sm:flex-row justify-between items-center glass-card p-4 rounded-2xl gap-3">
+                    <div class="flex items-center space-x-2 text-sm font-bold text-slate-900 dark:text-white">
+                        <i class="fa-solid fa-calendar-days text-emerald-500 dark:text-emerald-400"></i>
+                        <span>Calendrier des Rencontres</span>
+                    </div>
+                    <div class="flex items-center space-x-2 w-full sm:w-auto">
+                        <select id="team-filter-select" onchange="filterMatchesByTeam(event)" class="bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:border-emerald-500">
+                            <option value="">Filtrer par équipe...</option>
+                        </select>
+                        <button onclick="toggleRulesModal()" class="text-xs bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-300 px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 transition flex items-center space-x-2 whitespace-nowrap">
+                            <i class="fa-solid fa-circle-question"></i>
+                            <span>Barème</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="matchdays-tabs" class="flex flex-wrap gap-2 pb-1"></div>
+                <div id="matches-list" class="grid gap-4"></div>
+            </div>
+
+            <!-- ONGLET CLASSEMENT -->
+            <div id="content-leaderboard" class="hidden space-y-4">
+                <div class="glass-card p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center space-x-2 text-sm font-bold text-slate-900 dark:text-white">
+                        <i class="fa-solid fa-trophy text-amber-500 dark:text-amber-400"></i>
+                        <span>Classement Général</span>
+                    </div>
+                    <button onclick="shareOnWhatsApp()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center space-x-2 shadow-md shadow-emerald-600/20">
+                        <i class="fa-brands fa-whatsapp text-base"></i>
+                        <span>Partager le classement sur WhatsApp</span>
+                    </button>
+                </div>
+                <div class="glass-card rounded-2xl overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-200/60 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 text-[11px] uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                                <th class="p-4 font-semibold">Rang</th>
+                                <th class="p-4 font-semibold">Joueur</th>
+                                <th class="p-4 text-right font-semibold">Points</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body" class="divide-y divide-slate-200 dark:divide-slate-800/60 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ONGLET VAINQUEUR DE LA COMPETITION -->
+            <div id="content-winner" class="hidden space-y-6 max-w-xl mx-auto glass-card p-6 rounded-3xl border border-slate-200 dark:border-slate-800">
+                <div class="flex items-center space-x-2.5 border-b border-slate-200 dark:border-slate-800 pb-4">
+                    <div class="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-2 rounded-xl border border-amber-500/20">
+                        <i class="fa-solid fa-crown text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Vainqueur de la Compétition</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Pronostic Bonus Long Terme (Rapporte gros !)</p>
+                    </div>
+                </div>
+                <div class="space-y-4 bg-slate-100 dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <p class="text-xs text-slate-600 dark:text-slate-300">Choisissez dès maintenant l'équipe qui soulèvera le trophée à la fin de la saison. Si vous avez vu juste, vous remporterez les points bonus définis par l'administrateur !</p>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1.5">Mon équipe favorite pour le titre</label>
+                        <select id="user-winner-select" class="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500">
+                            <option value="">-- Choisir une équipe --</option>
+                        </select>
+                    </div>
+                    <button onclick="saveWinnerPrediction()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 rounded-xl text-xs transition shadow-md">Enregistrer mon pronostic Vainqueur</button>
+                    <div id="winner-status-msg" class="text-xs text-center font-semibold text-slate-500 dark:text-slate-400 pt-1"></div>
+                </div>
+            </div>
+
+            <!-- ONGLET ARCHIVES -->
+            <div id="content-archives" class="hidden space-y-5 max-w-xl mx-auto">
+                <div class="glass-card p-4 rounded-2xl flex items-center justify-between">
+                    <div class="flex items-center space-x-2 text-sm font-bold text-slate-900 dark:text-white">
+                        <i class="fa-solid fa-box-archive text-emerald-500 dark:text-emerald-400"></i>
+                        <span>Archives des Matchs Terminés</span>
+                    </div>
+                </div>
+                <div id="archives-list" class="space-y-3">
+                    <p class="text-xs text-slate-500 text-center py-10">Chargement des archives...</p>
+                </div>
+            </div>
+
+            <!-- ONGLET STATISTIQUES & RECORDS -->
+            <div id="content-stats" class="hidden space-y-6 max-w-xl mx-auto">
+                <div class="glass-card p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-5">
+                    <div class="flex items-center space-x-2.5 border-b border-slate-200 dark:border-slate-800 pb-4">
+                        <div class="bg-blue-500/10 text-blue-600 dark:text-blue-400 p-2 rounded-xl border border-blue-500/20">
+                            <i class="fa-solid fa-chart-pie text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white">Statistiques & Records de la Ligue</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Analyse globale des performances des joueurs</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="stats-cards-container">
+                        <div class="bg-slate-100 dark:bg-slate-900/80 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-1">
+                            <i class="fa-solid fa-bullseye text-amber-500 dark:text-amber-400 text-xl mb-1"></i>
+                            <span class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase">Roi des Scores Exacts</span>
+                            <span id="stat-sniper" class="text-sm font-bold text-slate-900 dark:text-white">-</span>
+                        </div>
+                        <div class="bg-slate-100 dark:bg-slate-900/80 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-1">
+                            <i class="fa-solid fa-bolt text-amber-500 dark:text-amber-400 text-xl mb-1"></i>
+                            <span class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase">Meilleur Stratège (Jokers)</span>
+                            <span id="stat-stratege" class="text-sm font-bold text-slate-900 dark:text-white">-</span>
+                        </div>
+                        <div class="bg-slate-100 dark:bg-slate-900/80 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-1">
+                            <i class="fa-solid fa-futbol text-emerald-600 dark:text-emerald-400 text-xl mb-1"></i>
+                            <span class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase">Buts Pronostiqués (Total)</span>
+                            <span id="stat-total-goals" class="text-base font-bold text-emerald-600 dark:text-emerald-400">0</span>
+                        </div>
+                        <div class="bg-slate-100 dark:bg-slate-900/80 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-1">
+                            <i class="fa-solid fa-check-to-slot text-blue-600 dark:text-blue-400 text-xl mb-1"></i>
+                            <span class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase">Total Pronostics Validés</span>
+                            <span id="stat-total-preds" class="text-base font-bold text-blue-600 dark:text-blue-400">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET SALON DE DISCUSSION / CHAT -->
+            <div id="content-chat" class="hidden space-y-4 max-w-xl mx-auto glass-card p-6 rounded-3xl border border-slate-200 dark:border-slate-800">
+                <div class="flex items-center space-x-2.5 border-b border-slate-200 dark:border-slate-800 pb-4">
+                    <div class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-2 rounded-xl border border-emerald-500/20">
+                        <i class="fa-solid fa-comments text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-white">Salon de la Ligue</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Discutez et chambrez entre participants en direct</p>
+                    </div>
+                </div>
+
+                <div id="chat-messages-container" class="space-y-3 h-80 overflow-y-auto pr-1 bg-slate-200/40 dark:bg-slate-950/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-900">
+                    <p class="text-xs text-slate-500 text-center py-10">Chargement des messages...</p>
+                </div>
+
+                <form onsubmit="sendChatMessage(event)" class="flex gap-2 pt-2">
+                    <input type="text" id="chat-input-msg" required class="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500" placeholder="Écrivez votre message...">
+                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-5 py-3 rounded-xl text-xs transition shadow-md"><i class="fa-solid fa-paper-plane"></i></button>
+                </form>
+            </div>
+
+            <!-- ONGLET PROFIL -->
+            <div id="content-profile" class="hidden space-y-6 max-w-xl mx-auto">
+                <div class="glass-card p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6">
+                    <div class="flex items-center space-x-2.5 border-b border-slate-200 dark:border-slate-800 pb-4">
+                        <div class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-2 rounded-xl border border-emerald-500/20">
+                            <i class="fa-solid fa-id-card text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white">Mon Profil Joueur</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Gérez vos informations personnelles et vos stats</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-center gap-6 bg-slate-100 dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        <div class="w-20 h-20 rounded-2xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-3xl border border-slate-300 dark:border-slate-700 shadow-inner overflow-hidden relative group">
+                            <span id="profile-avatar-emoji">⚽</span>
+                            <img id="profile-avatar-img" class="w-full h-full object-cover hidden" alt="Avatar">
+                        </div>
+                        <div class="text-center sm:text-left space-y-1">
+                            <h4 id="profile-display-pseudo" class="text-lg font-bold text-slate-900 dark:text-white"></h4>
+                            <p id="profile-display-email" class="text-xs text-slate-500 dark:text-slate-400"></p>
+                            <div class="inline-flex items-center space-x-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-3 py-1 rounded-xl text-xs font-bold border border-emerald-500/20 mt-2">
+                                <i class="fa-solid fa-star"></i>
+                                <span id="profile-display-score">0</span> points au classement
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STATISTIQUES PERSONNELLES AVANCÉES -->
+                    <div class="bg-slate-100 dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center"><i class="fa-solid fa-chart-line mr-2"></i> Mes Statistiques Personnelles</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                            <div class="bg-white dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                                <span class="block text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">Pronos Validés</span>
+                                <span id="prof-stat-total" class="text-base font-bold text-slate-900 dark:text-white">0</span>
+                            </div>
+                            <div class="bg-white dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                                <span class="block text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">Taux Réussite</span>
+                                <span id="prof-stat-success" class="text-base font-bold text-emerald-600 dark:text-emerald-400">0%</span>
+                            </div>
+                            <div class="bg-white dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                                <span class="block text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">Scores Exacts</span>
+                                <span id="prof-stat-exacts" class="text-base font-bold text-amber-500 dark:text-amber-400">0</span>
+                            </div>
+                            <div class="bg-white dark:bg-slate-950/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                                <span class="block text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">Jokers Utilisés</span>
+                                <span id="prof-stat-jokers" class="text-base font-bold text-blue-600 dark:text-blue-400">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TROPHÉES & BADGES -->
+                    <div class="bg-slate-100 dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center"><i class="fa-solid fa-medal mr-2"></i> Mes Trophées & Badges</h4>
+                        <div id="badges-container" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1"></div>
+                    </div>
+
+                    <form onsubmit="updateProfile(event)" class="space-y-4 bg-slate-100 dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Modifier mon profil</h4>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nouveau Pseudo</label>
+                            <input type="text" id="edit-pseudo" required class="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Changer d'avatar ou importer une photo</label>
+                            <div class="grid grid-cols-5 gap-2 mb-3" id="edit-avatar-selection">
+                                <div onclick="selectEditAvatar('🦁')" class="edit-avatar-option cursor-pointer bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl p-2 text-center text-xl transition hover:border-emerald-500">🦁</div>
+                                <div onclick="selectEditAvatar('🦅')" class="edit-avatar-option cursor-pointer bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl p-2 text-center text-xl transition hover:border-emerald-500">🦅</div>
+                                <div onclick="selectEditAvatar('⚡')" class="edit-avatar-option cursor-pointer bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl p-2 text-center text-xl transition hover:border-emerald-500">⚡</div>
+                                <div onclick="selectEditAvatar('🔥')" class="edit-avatar-option cursor-pointer bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl p-2 text-center text-xl transition hover:border-emerald-500">🔥</div>
+                                <div onclick="selectEditAvatar('👑')" class="edit-avatar-option cursor-pointer bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl p-2 text-center text-xl transition hover:border-emerald-500">👑</div>
+                                <div onclick="selectEditAvatar('⚽')" class="edit-avatar-option cursor-pointer bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl p-2 text-center text-xl transition hover:border-emerald-500">⚽</div>
+                                <div onclick="selectEditAvatar('⭐')" class="edit-avatar-option cursor-pointer bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl p-2 text-center text-xl transition hover:border-emerald-500">⭐</div>
+                                <div onclick="selectEditAvatar('🎯')" class="edit-avatar-option cursor-pointer bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl p-2 text-center text-xl transition hover:border-emerald-500">🎯</div>
+                                <div onclick="selectEditAvatar('🚀')" class="edit-avatar-option cursor-pointer bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl p-2 text-center text-xl transition hover:border-emerald-500">🚀</div>
+                                <div onclick="selectEditAvatar('🦊')" class="edit-avatar-option cursor-pointer bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl p-2 text-center text-xl transition hover:border-emerald-500">🦊</div>
+                            </div>
+                            <input type="file" id="edit-custom-photo-input" accept="image/*" onchange="handleEditCustomPhoto(event)" class="hidden">
+                            <label for="edit-custom-photo-input" class="w-full bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-800 hover:border-emerald-500 rounded-xl py-2.5 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-center space-x-2 cursor-pointer transition">
+                                <i class="fa-solid fa-camera text-emerald-500 dark:text-emerald-400"></i>
+                                <span id="edit-photo-label-text">Importer une photo personnelle</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition shadow-md">Enregistrer les modifications</button>
+                    </form>
+                </div>
+
+                <!-- HISTORIQUE DES PRONOSTICS -->
+                <div class="glass-card p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                    <div class="flex items-center space-x-2.5 border-b border-slate-200 dark:border-slate-800 pb-3">
+                        <div class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-2 rounded-xl border border-emerald-500/20">
+                            <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white">Historique de mes pronostics</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Retrouvez tous vos paris validés</p>
+                        </div>
+                    </div>
+                    <div id="profile-history-list" class="space-y-3 max-h-96 overflow-y-auto pr-1">
+                        <p class="text-xs text-slate-500 text-center py-4">Chargement de l'historique...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONGLET ADMIN -->
+            <div id="content-admin" class="hidden space-y-6 glass-card p-6 rounded-3xl border border-slate-200 dark:border-slate-800">
+                <div class="flex items-center space-x-2.5 border-b border-slate-200 dark:border-slate-800 pb-4">
+                    <div class="bg-amber-500/10 text-amber-600 dark:text-amber-400 p-2 rounded-xl border border-amber-500/20">
+                        <i class="fa-solid fa-lock text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-amber-600 dark:text-amber-400">Panneau d'Administration</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Gestion globale du championnat</p>
+                    </div>
+                </div>
+                
+                <!-- CONFIGURATION DU BAROMÈTRE DES TENDANCES -->
+                <div class="bg-slate-100 dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Option Baromètre des Tendances</h4>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Afficher les statistiques et pourcentages de paris de la communauté sous les matchs verrouillés</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="admin-toggle-barometer" onchange="toggleBarometerSetting(event)" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-300 dark:bg-slate-950 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- CONFIGURATION DU VAINQUEUR FINAL -->
+                <div class="bg-slate-100 dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Option Vainqueur de la Compétition</h4>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">Activer le pronostic bonus long terme pour les joueurs</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="admin-toggle-winner" onchange="toggleWinnerSetting(event)" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-300 dark:bg-slate-950 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                        </label>
+                    </div>
+
+                    <div id="admin-winner-config-box" class="hidden space-y-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">Désigner l'équipe championne (Clôture finale)</label>
+                            <div class="flex gap-2">
+                                <select id="admin-real-winner-select" class="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white">
+                                    <option value="">-- Choisir le champion --</option>
+                                </select>
+                                <button onclick="closeTournamentWinner()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition shadow">Valider & Attribuer les points</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-100 dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">1. Gestion des équipes</h4>
+                    <form onsubmit="addTeam(event)" class="flex gap-2">
+                        <input type="text" id="team-name" required class="flex-1 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500" placeholder="Nom de l'équipe (ex: Real Madrid)">
+                        <button type="submit" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-md">Ajouter</button>
+                    </form>
+                    <div id="teams-list-badge" class="flex flex-wrap gap-2 pt-2"></div>
+                </div>
+
+                <form onsubmit="createMatch(event)" class="space-y-4 bg-slate-100 dark:bg-slate-900/80 p-5 rounded-2xl border border-slate-200 dark:border-slate-800">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">2. Planifier une rencontre</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">Journée</label>
+                            <input type="number" id="admin-matchday" min="1" value="1" onchange="updateTeamsDropdowns()" required class="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-900 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">Date</label>
+                            <input type="date" id="admin-date" required class="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-900 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">Heure</label>
+                            <input type="time" id="admin-time" required class="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-900 dark:text-white">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">Équipe Domicile</label>
+                            <select id="admin-home-select" required class="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-900 dark:text-white">
+                                <option value="">-- Choisir --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">Équipe Extérieur</label>
+                            <select id="admin-away-select" required class="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-900 dark:text-white">
+                                <option value="">-- Choisir --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition shadow-md">Créer le match</button>
+                </form>
+
+                <div class="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <div class="flex justify-between items-center">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">3. Clôturer / Corriger les scores</h4>
+                        <select id="admin-filter-day" onchange="loadAdminMatchesList()" class="bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg px-3 py-1 text-xs text-slate-900 dark:text-white">
+                            <option value="all">Toutes les journées</option>
+                        </select>
+                    </div>
+                    <div id="admin-matches-list" class="space-y-3"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL NOTIFICATIONS -->
+    <div id="notifications-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="glass-card max-w-md w-full p-6 rounded-3xl space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-emerald-600 dark:text-emerald-400 flex items-center"><i class="fa-solid fa-bell mr-2 text-xs"></i> Centre de Notifications</h3>
+                <button onclick="toggleNotificationsModal()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="notifications-list" class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                <p class="text-xs text-slate-500 text-center py-6">Aucune nouvelle notification.</p>
+            </div>
+            <button onclick="toggleNotificationsModal()" class="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 py-2.5 rounded-xl font-bold text-xs transition border border-slate-300 dark:border-slate-700">Fermer</button>
+        </div>
+    </div>
+
+    <!-- MODAL REGLES -->
+    <div id="rules-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="glass-card max-w-md w-full p-6 rounded-3xl space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-emerald-600 dark:text-emerald-400 flex items-center"><i class="fa-solid fa-star mr-2 text-xs"></i> Barème des Points</h3>
+                <button onclick="toggleRulesModal()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <ul class="space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                <li class="flex justify-between bg-slate-100 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200 dark:border-slate-800"><span>Score exact parfait</span><span class="font-bold text-emerald-600 dark:text-emerald-400">5 pts</span></li>
+                <li class="flex justify-between bg-slate-100 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200 dark:border-slate-800"><span>Bon écart de buts + bon vainqueur</span><span class="font-bold text-emerald-600 dark:text-emerald-400">3 pts</span></li>
+                <li class="flex justify-between bg-slate-100 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200 dark:border-slate-800"><span>Bon vainqueur (ou nul) sans le bon écart</span><span class="font-bold text-emerald-600 dark:text-emerald-400">2 pts</span></li>
+                <li class="flex justify-between bg-slate-100 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200 dark:border-slate-800"><span>Bonne attaque (buts d'une équipe trouvés)</span><span class="font-bold text-emerald-600 dark:text-emerald-400">1 pt</span></li>
+                <li class="flex justify-between bg-slate-100 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200 dark:border-slate-800"><span>Erreur complète</span><span class="font-bold text-slate-500 dark:text-slate-400">0 pt</span></li>
+                <li class="flex justify-between bg-slate-100 dark:bg-slate-900/80 p-3 rounded-xl border border-amber-500/50 dark:border-amber-400 mt-2"><span>⚡ Bonus Joker (x2 sur un match par journée)</span><span class="font-bold text-amber-600 dark:text-amber-400">× 2</span></li>
+                <li class="flex justify-between bg-slate-100 dark:bg-slate-900/80 p-3 rounded-xl border border-amber-500/50 dark:border-amber-400"><span>👑 Vainqueur de la Compétition (Bonus)</span><span class="font-bold text-amber-600 dark:text-amber-400">10 pts</span></li>
+            </ul>
+            <button onclick="toggleRulesModal()" class="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 py-2.5 rounded-xl font-bold text-xs transition border border-slate-300 dark:border-slate-700">Fermer</button>
+        </div>
+    </div>
+
+    <!-- MODAL CONSULTATION DES PRONOS DES AUTRES -->
+    <div id="pronos-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="glass-card max-w-md w-full p-6 rounded-3xl space-y-4 shadow-2xl border border-slate-200 dark:border-slate-800">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-emerald-600 dark:text-emerald-400 flex items-center"><i class="fa-solid fa-eye mr-2 text-xs"></i> Pronostics des Joueurs</h3>
+                <button onclick="togglePronosModal()" class="text-slate-500 hover:text-slate-900 dark:hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="pronos-modal-match-title" class="text-xs font-semibold text-slate-500 dark:text-slate-400 text-center"></div>
+            <div id="pronos-modal-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+            <button onclick="togglePronosModal()" class="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 py-2.5 rounded-xl font-bold text-xs transition border border-slate-300 dark:border-slate-700">Fermer</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT FIREBASE & LOGIQUE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+  apiKey: "AIzaSyCCDEUVxbQjuqvAiIefvSplufRoJ6_z07o",
+  authDomain: "pronostiquesfamille.firebaseapp.com",
+  projectId: "pronostiquesfamille",
+  storageBucket: "pronostiquesfamille.firebasestorage.app",
+  messagingSenderId: "735910124872",
+  appId: "1:735910124872:web:1af52cea384c5526ba277d"
+};
+
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let isRegistering = false;
+        let currentUser = null;
+        let userPseudo = "";
+        let selectedAvatar = '🦁';
+        let editAvatar = '🦁';
+        let isAdmin = false;
+        let currentMatchday = 1;
+        let selectedTeamFilter = "";
+        let globalTeams = [];
+        let allMatchesCache = [];
+        let cachedLeaderboard = [];
+        let allUsersMap = {};
+        let barometerEnabled = false;
+        const ADMIN_EMAIL = "admin@pronosfoot.com";
+
+        // GESTION DU THÈME CLAIR / SOMBRE
+        window.toggleTheme = function() {
+            const htmlEl = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            if (htmlEl.classList.contains('dark')) {
+                htmlEl.classList.remove('dark');
+                localStorage.setItem('pronosfoot_theme', 'light');
+                themeIcon.className = "fa-solid fa-sun text-sm text-amber-500";
+            } else {
+                htmlEl.classList.add('dark');
+                localStorage.setItem('pronosfoot_theme', 'dark');
+                themeIcon.className = "fa-solid fa-moon text-sm";
+            }
+        };
+
+        // Initialisation du thème au chargement
+        const savedTheme = localStorage.getItem('pronosfoot_theme') || 'dark';
+        if (savedTheme === 'light') {
+            document.documentElement.classList.remove('dark');
+            document.addEventListener('DOMContentLoaded', () => {
+                const icon = document.getElementById('theme-icon');
+                if (icon) icon.className = "fa-solid fa-sun text-sm text-amber-500";
+            });
+        }
+
+        window.selectAvatar = function(avatar) {
+            selectedAvatar = avatar;
+            document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            document.getElementById('photo-label-text').innerText = "Importer une photo de profil";
+        };
+
+        window.handleCustomPhoto = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedAvatar = e.target.result;
+                    document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+                    document.getElementById('photo-label-text').innerText = "Photo sélectionnée avec succès !";
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.selectEditAvatar = function(avatar) {
+            editAvatar = avatar;
+            document.querySelectorAll('.edit-avatar-option').forEach(el => el.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            document.getElementById('edit-photo-label-text').innerText = "Importer une photo personnelle";
+        };
+
+        window.handleEditCustomPhoto = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    editAvatar = e.target.result;
+                    document.querySelectorAll('.edit-avatar-option').forEach(el => el.classList.remove('selected'));
+                    document.getElementById('edit-photo-label-text').innerText = "Nouvelle photo prête à être enregistrée !";
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.updateProfile = async function(event) {
+            event.preventDefault();
+            if (!currentUser) return;
+
+            const newPseudo = document.getElementById('edit-pseudo').value.trim();
+            if (!newPseudo) { alert("Veuillez entrer un pseudo."); return; }
+
+            try {
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    pseudo: newPseudo,
+                    avatar: editAvatar
+                });
+                userPseudo = newPseudo;
+                document.getElementById('display-pseudo').innerText = newPseudo;
+                document.getElementById('profile-display-pseudo').innerText = newPseudo;
+
+                const emojiSpan = document.getElementById('header-avatar-emoji');
+                const imgTag = document.getElementById('header-avatar-img');
+                const profEmoji = document.getElementById('profile-avatar-emoji');
+                const profImg = document.getElementById('profile-avatar-img');
+
+                if (editAvatar.startsWith('data:image')) {
+                    imgTag.src = editAvatar;
+                    imgTag.classList.remove('hidden');
+                    emojiSpan.classList.add('hidden');
+
+                    profImg.src = editAvatar;
+                    profImg.classList.remove('hidden');
+                    profEmoji.classList.add('hidden');
+                } else {
+                    emojiSpan.innerText = editAvatar;
+                    emojiSpan.classList.remove('hidden');
+                    imgTag.classList.add('hidden');
+
+                    profEmoji.innerText = editAvatar;
+                    profEmoji.classList.remove('hidden');
+                    profImg.classList.add('hidden');
+                }
+
+                alert("Profil mis à jour avec succès !");
+            } catch (error) {
+                alert("Erreur lors de la mise à jour : " + error.message);
+            }
+        };
+
+        window.shareOnWhatsApp = function() {
+            if (cachedLeaderboard.length === 0) {
+                alert("Le classement est vide pour le moment.");
+                return;
+            }
+
+            let message = "⚽ *CLASSEMENT PRONOSFOOT* ⚽\n\n";
+            let medals = ["🥇", "🥈", "🥉"];
+
+            cachedLeaderboard.forEach((u, index) => {
+                let rankEmoji = medals[index] || `#${index + 1}`;
+                message += `${rankEmoji} *${u.pseudo}* : *${u.score} pts*\n`;
+            });
+
+            message += "\n🔥 Venez faire vos pronos sur l'application !";
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        };
+
+        window.toggleAuthMode = function() {
+            isRegistering = !isRegistering;
+            document.getElementById('auth-title').innerText = isRegistering ? "Inscription Sécurisée" : "Connexion";
+            document.getElementById('auth-btn').innerText = isRegistering ? "S'inscrire" : "Se connecter";
+            document.getElementById('auth-toggle-btn').innerText = isRegistering ? "Déjà un compte ? Se connecter" : "Pas de compte ? S'inscrire";
+            document.getElementById('pseudo-group').classList.toggle('hidden', !isRegistering);
+            document.getElementById('confirm-password-group').classList.toggle('hidden', !isRegistering);
+            document.getElementById('forgot-password-btn').classList.toggle('hidden', isRegistering);
+        };
+
+        window.toggleRulesModal = function() {
+            document.getElementById('rules-modal').classList.toggle('hidden');
+        };
+
+        window.togglePronosModal = function() {
+            document.getElementById('pronos-modal').classList.toggle('hidden');
+        };
+
+        window.toggleNotificationsModal = function() {
+            document.getElementById('notifications-modal').classList.toggle('hidden');
+        };
+
+        window.filterMatchesByTeam = function(event) {
+            selectedTeamFilter = event.target.value;
+            loadData();
+        };
+
+        window.viewMatchPredictions = async function(matchId, matchTitle) {
+            document.getElementById('pronos-modal-match-title').innerText = matchTitle;
+            const listEl = document.getElementById('pronos-modal-list');
+            listEl.innerHTML = '<p class="text-center text-xs text-slate-500 py-4">Chargement des pronostics...</p>';
+            togglePronosModal();
+
+            try {
+                const predsSnapshot = await getDocs(query(collection(db, "predictions"), where("matchId", "==", matchId)));
+                let pronosHtml = "";
+
+                if (predsSnapshot.empty) {
+                    listEl.innerHTML = '<p class="text-center text-xs text-slate-400 py-4">Aucun pronostic enregistré pour ce match.</p>';
+                    return;
+                }
+
+                predsSnapshot.forEach(docSnap => {
+                    const p = docSnap.data();
+                    const userInfo = allUsersMap[p.userId] || { pseudo: "Joueur", avatar: "⚽" };
+                    
+                    let avatarHtml = '';
+                    if (userInfo.avatar && userInfo.avatar.startsWith('data:image')) {
+                        avatarHtml = `<img src="${userInfo.avatar}" class="w-full h-full object-cover">`;
+                    } else {
+                        avatarHtml = `<span>${userInfo.avatar || '⚽'}</span>`;
+                    }
+
+                    pronosHtml += `
+                        <div class="bg-slate-100 dark:bg-slate-900/80 p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-7 h-7 rounded-lg bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-sm border border-slate-300 dark:border-slate-700 overflow-hidden">${avatarHtml}</div>
+                                <span class="font-semibold text-slate-900 dark:text-white text-xs">${userInfo.pseudo}</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                ${p.isJoker ? '<span class="bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded text-[10px] font-bold border border-amber-500/20"><i class="fa-solid fa-bolt mr-1"></i>Joker x2</span>' : ''}
+                                <span class="bg-slate-200 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 font-bold px-3 py-1 rounded-lg text-xs border border-slate-300 dark:border-slate-700">${p.homeScore} - ${p.awayScore}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                listEl.innerHTML = pronosHtml;
+            } catch (error) {
+                listEl.innerHTML = '<p class="text-center text-xs text-rose-500 py-4">Erreur lors du chargement.</p>';
+            }
+        };
+
+        window.forgotPassword = async function() {
+            const email = document.getElementById('email').value.trim();
+            if (!email) { alert("Veuillez d'abord saisir votre email."); return; }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("Lien de réinitialisation envoyé à : " + email);
+            } catch (error) { alert("Erreur : " + error.message); }
+        };
+
+        window.handleAuth = async function(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+
+            try {
+                if (isRegistering) {
+                    const pseudo = document.getElementById('pseudo').value.trim();
+                    const confirmPassword = document.getElementById('confirm-password').value;
+
+                    if (!pseudo) { alert("Veuillez renseigner un pseudo."); return; }
+                    if (password.length < 6) { alert("Le mot de passe doit contenir au moins 6 caractères."); return; }
+                    if (password !== confirmPassword) { alert("Les mots de passe ne correspondent pas."); return; }
+
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await setDoc(doc(db, "users", userCredential.user.uid), { 
+                        pseudo, 
+                        email, 
+                        avatar: selectedAvatar,
+                        score: 0, 
+                        createdAt: new Date().toISOString() 
+                    });
+                    alert("Inscription réussie !");
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (error) {
+                let msg = "Erreur d'authentification.";
+                if (error.code === 'auth/email-already-in-use') msg = "Cet email est déjà utilisé.";
+                else if (error.code === 'auth/invalid-email') msg = "Email invalide.";
+                else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') msg = "Email ou mot de passe incorrect.";
+                alert(msg);
+            }
+        };
+
+        window.logout = function() { signOut(auth); };
+
+        onAuthStateChanged(auth, async (user) => {
+            const authSection = document.getElementById('auth-section');
+            const appSection = document.getElementById('app-section');
+            const userInfo = document.getElementById('user-info');
+            const adminTab = document.getElementById('main-tab-admin');
+
+            if (user) {
+                currentUser = user;
+                isAdmin = (user.email.trim().toLowerCase() === ADMIN_EMAIL.trim().toLowerCase());
+                
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                let userAvatar = '⚽';
+                let userScore = 0;
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    userPseudo = data.pseudo || user.email.split('@')[0];
+                    userAvatar = data.avatar || '⚽';
+                    userScore = data.score || 0;
+                } else {
+                    userPseudo = user.email.split('@')[0];
+                }
+
+                authSection.style.display = 'none';
+                appSection.style.display = 'block';
+                userInfo.classList.remove('hidden');
+                document.getElementById('display-pseudo').innerText = userPseudo;
+                document.getElementById('profile-display-pseudo').innerText = userPseudo;
+                document.getElementById('profile-display-email').innerText = user.email;
+                document.getElementById('profile-display-score').innerText = userScore;
+                document.getElementById('edit-pseudo').value = userPseudo;
+                editAvatar = userAvatar;
+
+                const emojiSpan = document.getElementById('header-avatar-emoji');
+                const imgTag = document.getElementById('header-avatar-img');
+                const profEmoji = document.getElementById('profile-avatar-emoji');
+                const profImg = document.getElementById('profile-avatar-img');
+
+                if (userAvatar.startsWith('data:image')) {
+                    imgTag.src = userAvatar;
+                    imgTag.classList.remove('hidden');
+                    emojiSpan.classList.add('hidden');
+
+                    profImg.src = userAvatar;
+                    profImg.classList.remove('hidden');
+                    profEmoji.classList.add('hidden');
+                } else {
+                    emojiSpan.innerText = userAvatar;
+                    emojiSpan.classList.remove('hidden');
+                    imgTag.classList.add('hidden');
+
+                    profEmoji.innerText = userAvatar;
+                    profEmoji.classList.remove('hidden');
+                    profImg.classList.add('hidden');
+                }
+                
+                if (isAdmin) {
+                    adminTab.classList.remove('hidden');
+                } else {
+                    adminTab.classList.add('hidden');
+                }
+                loadGlobalSettings();
+                loadTeamsAndMatches();
+                loadData();
+                initLeaderboardListener();
+                initChatListener();
+                initStatsListener();
+                initNotificationsListener();
+            } else {
+                currentUser = null;
+                isAdmin = false;
+                authSection.style.display = 'block';
+                appSection.style.display = 'none';
+                userInfo.classList.add('hidden');
+                adminTab.classList.add('hidden');
+            }
+        });
+
+        window.switchMainTab = function(tabName) {
+            if (tabName === 'admin' && !isAdmin) return;
+
+            ['matches', 'leaderboard', 'winner', 'archives', 'stats', 'chat', 'profile', 'admin'].forEach(t => {
+                const el = document.getElementById(`content-${t}`);
+                const tabEl = document.getElementById(`main-tab-${t}`);
+                if (el) el.classList.add('hidden');
+                if (tabEl) { tabEl.classList.remove('bg-emerald-500', 'text-slate-950', 'shadow-md'); tabEl.classList.add('text-slate-600', 'dark:text-slate-300'); }
+            });
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            const targetTab = document.getElementById(`main-tab-${tabName}`);
+            targetTab.classList.add('bg-emerald-500', 'text-slate-950', 'shadow-md');
+            targetTab.classList.remove('text-slate-600', 'dark:text-slate-300');
+        };
+
+        window.switchMatchday = function(day) { currentMatchday = day; loadData(); };
+
+        function loadGlobalSettings() {
+            onSnapshot(doc(db, "settings", "config"), (docSnap) => {
+                const winnerTab = document.getElementById('main-tab-winner');
+                const configBox = document.getElementById('admin-winner-config-box');
+                const toggleInput = document.getElementById('admin-toggle-winner');
+                const toggleBarometerInput = document.getElementById('admin-toggle-barometer');
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    barometerEnabled = !!data.barometerEnabled;
+                    if (toggleBarometerInput) toggleBarometerInput.checked = barometerEnabled;
+
+                    if (data.winnerOptionEnabled) {
+                        winnerTab.classList.remove('hidden');
+                        if (toggleInput) toggleInput.checked = true;
+                        if (configBox) configBox.classList.remove('hidden');
+                    } else {
+                        winnerTab.classList.add('hidden');
+                        if (toggleInput) toggleInput.checked = false;
+                        if (configBox) configBox.classList.add('hidden');
+                    }
+                }
+            });
+        }
+
+        window.toggleBarometerSetting = async function(event) {
+            if (!isAdmin) return;
+            const isChecked = event.target.checked;
+            await setDoc(doc(db, "settings", "config"), { barometerEnabled: isChecked }, { merge: true });
+        };
+
+        window.toggleWinnerSetting = async function(event) {
+            if (!isAdmin) return;
+            const isChecked = event.target.checked;
+            await setDoc(doc(db, "settings", "config"), { winnerOptionEnabled: isChecked }, { merge: true });
+        };
+
+        function loadTeamsAndMatches() {
+            onSnapshot(collection(db, "teams"), (snapshot) => {
+                globalTeams = [];
+                let badgesHtml = "";
+                snapshot.forEach((docTeam) => {
+                    globalTeams.push({ id: docTeam.id, name: docTeam.data().name });
+                });
+                globalTeams.sort((a, b) => a.name.localeCompare(b.name));
+
+                globalTeams.forEach(t => {
+                    badgesHtml += `
+                        <div class="glass-card px-3 py-1 rounded-xl text-xs font-semibold text-emerald-600 dark:text-emerald-300 flex items-center space-x-2">
+                            <span>${t.name}</span>
+                            <button onclick="deleteTeam('${t.id}', '${t.name}')" class="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-200 transition"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    `;
+                });
+                document.getElementById('teams-list-badge').innerHTML = badgesHtml || '<span class="text-xs text-slate-500">Aucune équipe enregistrée.</span>';
+                updateTeamsDropdowns();
+                updateWinnerDropdowns();
+                updateTeamFilterDropdown();
+            });
+
+            onSnapshot(collection(db, "matches"), (snapshot) => {
+                allMatchesCache = [];
+                snapshot.forEach(docMatch => {
+                    allMatchesCache.push({ id: docMatch.id, ...docMatch.data() });
+                });
+                updateTeamsDropdowns();
+                if (isAdmin) loadAdminMatchesList();
+                loadArchivesList();
+            });
+        }
+
+        window.updateTeamFilterDropdown = function() {
+            let options = '<option value="">Filtrer par équipe...</option>';
+            globalTeams.forEach(t => {
+                options += `<option value="${t.name}" ${selectedTeamFilter === t.name ? 'selected' : ''}>${t.name}</option>`;
+            });
+            const filterSelect = document.getElementById('team-filter-select');
+            if (filterSelect) filterSelect.innerHTML = options;
+        };
+
+        window.loadArchivesList = function() {
+            let archivesHtml = "";
+            let finishedMatches = allMatchesCache.filter(m => m.status === 'finished');
+
+            finishedMatches.sort((a, b) => {
+                if ((a.matchday || 1) !== (b.matchday || 1)) return (b.matchday || 1) - (a.matchday || 1);
+                return new Date(`${b.matchDate}T${b.matchTime}`) - new Date(`${a.matchDate}T${a.matchTime}`);
+            });
+
+            if (finishedMatches.length === 0) {
+                document.getElementById('archives-list').innerHTML = '<p class="text-xs text-slate-500 text-center py-10">Aucune archive disponible pour le moment.</p>';
+                return;
+            }
+
+            finishedMatches.forEach(m => {
+                archivesHtml += `
+                    <div class="glass-card p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <div class="text-xs">
+                            <div class="flex items-center space-x-2 text-slate-500 dark:text-slate-400 mb-1 font-semibold">
+                                <span class="bg-slate-200 dark:bg-slate-800 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded text-[10px]">Journée ${m.matchday || 1}</span>
+                                <span>${m.matchDate}</span>
+                            </div>
+                            <span class="font-bold text-slate-900 dark:text-white text-sm">${m.homeTeam} vs ${m.awayTeam}</span>
+                        </div>
+                        <div class="bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-xl text-center">
+                            <span class="text-[10px] uppercase block text-slate-500 dark:text-slate-400 font-bold">Score Final</span>
+                            <span class="text-emerald-600 dark:text-emerald-400 font-black text-sm">${m.homeScore} - ${m.awayScore}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('archives-list').innerHTML = archivesHtml;
+        };
+
+        window.updateWinnerDropdowns = function() {
+            let options = '<option value="">-- Choisir une équipe --</option>';
+            globalTeams.forEach(t => {
+                options += `<option value="${t.name}">${t.name}</option>`;
+            });
+            const userSelect = document.getElementById('user-winner-select');
+            const adminSelect = document.getElementById('admin-real-winner-select');
+            if (userSelect) userSelect.value = userSelect.value || "";
+            if (adminSelect) adminSelect.innerHTML = options;
+            if (userSelect && userSelect.options.length <= 1) {
+                userSelect.innerHTML = options;
+            }
+        };
+
+        window.saveWinnerPrediction = async function() {
+            if (!currentUser) return;
+            const team = document.getElementById('user-winner-select').value;
+            if (!team) { alert("Veuillez sélectionner une équipe."); return; }
+
+            await setDoc(doc(db, "tournament_winners", currentUser.uid), {
+                userId: currentUser.uid,
+                teamName: team,
+                updatedAt: new Date().toISOString()
+            });
+
+            document.getElementById('winner-status-msg').innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 mr-1"></i> Pronostic enregistré : ${team}`;
+            alert("Votre pronostic pour le vainqueur a bien été enregistré !");
+        };
+
+        window.closeTournamentWinner = async function() {
+            if (!isAdmin) return;
+            const winningTeam = document.getElementById('admin-real-winner-select').value;
+            if (!winningTeam) { alert("Veuillez sélectionner l'équipe championne."); return; }
+
+            if (confirm(`Confirmer que "${winningTeam}" remporte la compétition ? (Attribution de 10 points bonus aux bons pronostiqueurs)`)) {
+                await setDoc(doc(db, "settings", "config"), { winningTeam: winningTeam }, { merge: true });
+
+                const winnersSnapshot = await getDocs(collection(db, "tournament_winners"));
+                const usersSnapshot = await getDocs(collection(db, "users"));
+                const allMatchesSnapshot = await getDocs(collection(db, "matches"));
+                const finishedMatches = {};
+                allMatchesSnapshot.forEach(mDoc => {
+                    const mData = mDoc.data();
+                    if (mData.status === 'finished') finishedMatches[mDoc.id] = { home: mData.homeScore, away: mData.awayScore };
+                });
+
+                const userTournamentPicks = {};
+                winnersSnapshot.forEach(docSnap => {
+                    userTournamentPicks[docSnap.data().userId] = docSnap.data().teamName;
+                });
+
+                const updatePromises = [];
+                for (const userDocSnap of usersSnapshot.docs) {
+                    const userId = userDocSnap.id;
+                    const userEmail = userDocSnap.data().email || "";
+                    if (userEmail.trim().toLowerCase() === ADMIN_EMAIL.trim().toLowerCase()) continue;
+
+                    const userPreds = await getDocs(query(collection(db, "predictions"), where("userId", "==", userId)));
+                    let totalUserScore = 0;
+
+                    userPreds.forEach(predDoc => {
+                        const pred = predDoc.data();
+                        const matchResult = finishedMatches[pred.matchId];
+                        if (matchResult) {
+                            const mH = matchResult.home;
+                            const mA = matchResult.away;
+                            const pH = pred.homeScore;
+                            const pA = pred.awayScore;
+                            const realOutcome = mH > mA ? 'home' : (mH < mA ? 'away' : 'draw');
+                            const predOutcome = pH > pA ? 'home' : (pH < pA ? 'away' : 'draw');
+                            const realDiff = mH - mA;
+                            const predDiff = pH - pA;
+
+                            let matchPoints = 0;
+                            if (pH === mH && pA === mA) matchPoints = 5;
+                            else if (realOutcome === predOutcome && realDiff === predDiff) matchPoints = 3;
+                            else if (realOutcome === predOutcome) matchPoints = 2;
+                            else if (pH === mH || pA === mA) matchPoints = 1;
+                            else matchPoints = 0;
+
+                            if (pred.isJoker) matchPoints *= 2;
+                            totalUserScore += matchPoints;
+                        }
+                    });
+
+                    if (userTournamentPicks[userId] === winningTeam) {
+                        totalUserScore += 10;
+                    }
+
+                    updatePromises.push(updateDoc(doc(db, "users", userId), { score: totalUserScore }));
+                }
+
+                await Promise.all(updatePromises);
+                
+                await addDoc(collection(db, "notifications"), {
+                    title: "👑 Vainqueur de la Compétition",
+                    message: `L'équipe ${winningTeam} a été sacrée championne ! Les points bonus ont été distribués.`,
+                    createdAt: new Date().toISOString()
+                });
+
+                alert(`Compétition clôturée ! L'équipe ${winningTeam} a été déclarée vainqueur et 10 points bonus ont été distribués.`);
+            }
+        };
+
+        // CENTRE DE NOTIFICATIONS
+        function initNotificationsListener() {
+            const q = query(collection(db, "notifications"), orderBy("createdAt", "desc"));
+            onSnapshot(q, (snapshot) => {
+                let notifsHtml = "";
+                let count = snapshot.size;
+
+                if (count > 0) {
+                    const badge = document.getElementById('notif-badge');
+                    badge.innerText = count;
+                    badge.classList.remove('hidden');
+                }
+
+                if (snapshot.empty) {
+                    document.getElementById('notifications-list').innerHTML = '<p class="text-xs text-slate-500 text-center py-6">Aucune notification pour le moment.</p>';
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const n = docSnap.data();
+                    let timeStr = "";
+                    if (n.createdAt) {
+                        const d = new Date(n.createdAt);
+                        timeStr = d.toLocaleDateString() + ' à ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    }
+
+                    notifsHtml += `
+                        <div class="bg-slate-100 dark:bg-slate-900/90 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-emerald-600 dark:text-emerald-400 text-xs">${n.title}</span>
+                                <span class="text-[9px] text-slate-500">${timeStr}</span>
+                            </div>
+                            <p class="text-xs text-slate-700 dark:text-slate-300">${n.message}</p>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('notifications-list').innerHTML = notifsHtml;
+            });
+        }
+
+        // STATISTIQUES GLOBALES DE LA LIGUE
+        async function initStatsListener() {
+            const predsSnap = await getDocs(collection(db, "predictions"));
+            const matchesSnap = await getDocs(collection(db, "matches"));
+
+            let totalGoals = 0;
+            let totalPreds = predsSnap.size;
+            let finishedMatches = {};
+            let sniperCounts = {};
+            let strategeCounts = {};
+
+            matchesSnap.forEach(mDoc => {
+                const m = mDoc.data();
+                if (m.status === 'finished') {
+                    finishedMatches[mDoc.id] = { home: m.homeScore, away: m.awayScore };
+                }
+            });
+
+            predsSnap.forEach(pDoc => {
+                const p = pDoc.data();
+                totalGoals += (Number(p.homeScore || 0) + Number(p.awayScore || 0));
+
+                if (p.isJoker) {
+                    strategeCounts[p.userId] = (strategeCounts[p.userId] || 0) + 1;
+                }
+
+                const fm = finishedMatches[p.matchId];
+                if (fm && p.homeScore === fm.home && p.awayScore === fm.away) {
+                    sniperCounts[p.userId] = (sniperCounts[p.userId] || 0) + 1;
+                }
+            });
+
+            let topSniper = "Aucun";
+            let maxSniper = 0;
+            for (let uid in sniperCounts) {
+                if (sniperCounts[uid] > maxSniper) {
+                    maxSniper = sniperCounts[uid];
+                    topSniper = (allUsersMap[uid] ? allUsersMap[uid].pseudo : "Joueur") + ` (${maxSniper} parfaits)`;
+                }
+            }
+
+            let topStratege = "Aucun";
+            let maxStratege = 0;
+            for (let uid in strategeCounts) {
+                if (strategeCounts[uid] > maxStratege) {
+                    maxStratege = strategeCounts[uid];
+                    topStratege = (allUsersMap[uid] ? allUsersMap[uid].pseudo : "Joueur") + ` (${maxStratege} jokers)`;
+                }
+            }
+
+            document.getElementById('stat-sniper').innerText = topSniper;
+            document.getElementById('stat-stratege').innerText = topStratege;
+            document.getElementById('stat-total-goals').innerText = totalGoals;
+            document.getElementById('stat-total-preds').innerText = totalPreds;
+        }
+
+        // GESTION DU SALON DE DISCUSSION (CHAT)
+        function initChatListener() {
+            const q = query(collection(db, "chat_messages"), orderBy("createdAt", "asc"));
+            onSnapshot(q, (snapshot) => {
+                let chatHtml = "";
+                if (snapshot.empty) {
+                    document.getElementById('chat-messages-container').innerHTML = '<p class="text-xs text-slate-500 text-center py-10">Aucun message pour l\'instant. Lancez la discussion !</p>';
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const msg = docSnap.data();
+                    const msgId = docSnap.id;
+                    const userInfo = allUsersMap[msg.userId] || { pseudo: "Membre", avatar: "⚽" };
+                    
+                    let avatarHtml = '';
+                    if (userInfo.avatar && userInfo.avatar.startsWith('data:image')) {
+                        avatarHtml = `<img src="${userInfo.avatar}" class="w-full h-full object-cover">`;
+                    } else {
+                        avatarHtml = `<span>${userInfo.avatar || '⚽'}</span>`;
+                    }
+
+                    let timeStr = "";
+                    if (msg.createdAt) {
+                        const d = new Date(msg.createdAt);
+                        timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    }
+
+                    const isMe = currentUser && msg.userId === currentUser.uid;
+
+                    chatHtml += `
+                        <div class="flex items-start space-x-2.5 ${isMe ? 'flex-row-reverse space-x-reverse' : ''}">
+                            <div class="w-7 h-7 rounded-xl bg-slate-200 dark:bg-slate-900 flex items-center justify-center text-sm border border-slate-300 dark:border-slate-800 shadow-sm overflow-hidden flex-shrink-0">${avatarHtml}</div>
+                            <div class="max-w-[75%]">
+                                <div class="flex items-center space-x-2 mb-0.5 ${isMe ? 'justify-end' : ''}">
+                                    <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-300">${userInfo.pseudo}</span>
+                                    <span class="text-[9px] text-slate-500">${timeStr}</span>
+                                    ${isAdmin ? `<button onclick="deleteChatMessage('${msgId}')" class="text-rose-500 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-200 text-[10px]"><i class="fa-solid fa-trash"></i></button>` : ''}
+                                </div>
+                                <div class="p-3 rounded-2xl text-xs ${isMe ? 'bg-emerald-500/10 text-emerald-900 dark:text-emerald-100 border border-emerald-500/20' : 'bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800'} shadow-sm">
+                                    ${escapeHtml(msg.text)}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                const container = document.getElementById('chat-messages-container');
+                container.innerHTML = chatHtml;
+                container.scrollTop = container.scrollHeight;
+            });
+        }
+
+        window.sendChatMessage = async function(event) {
+            event.preventDefault();
+            if (!currentUser) return;
+            const input = document.getElementById('chat-input-msg');
+            const text = input.value.trim();
+            if (!text) return;
+
+            await addDoc(collection(db, "chat_messages"), {
+                userId: currentUser.uid,
+                text: text,
+                createdAt: new Date().toISOString()
+            });
+
+            input.value = '';
+        };
+
+        window.deleteChatMessage = async function(msgId) {
+            if (!isAdmin) return;
+            if (confirm("Supprimer ce message ?")) {
+                await deleteDoc(doc(db, "chat_messages", msgId));
+            }
+        };
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        window.addTeam = async function(event) {
+            event.preventDefault();
+            if (!isAdmin) return;
+            const teamInput = document.getElementById('team-name');
+            const teamName = teamInput.value.trim();
+            if (!teamName) return;
+
+            if (globalTeams.some(t => t.name.toLowerCase() === teamName.toLowerCase())) {
+                alert("Cette équipe existe déjà.");
+                return;
+            }
+
+            await addDoc(collection(db, "teams"), { name: teamName });
+            teamInput.value = '';
+        };
+
+        window.deleteTeam = async function(teamId, teamName) {
+            if (!isAdmin) return;
+            if (confirm(`Voulez-vous vraiment supprimer l'équipe "${teamName}" ?`)) {
+                await deleteDoc(doc(db, "teams", teamId));
+            }
+        };
+
+        window.updateTeamsDropdowns = function() {
+            const selectedMatchday = parseInt(document.getElementById('admin-matchday').value) || 1;
+            const teamsAlreadyPlayingThisDay = new Set();
+            allMatchesCache.forEach(m => {
+                if (m.matchday === selectedMatchday) {
+                    teamsAlreadyPlayingThisDay.add(m.homeTeam);
+                    teamsAlreadyPlayingThisDay.add(m.awayTeam);
+                }
+            });
+
+            let optionsHome = '<option value="">-- Choisir --</option>';
+            let optionsAway = '<option value="">-- Choisir --</option>';
+
+            globalTeams.forEach(t => {
+                if (!teamsAlreadyPlayingThisDay.has(t.name)) {
+                    optionsHome += `<option value="${t.name}">${t.name}</option>`;
+                    optionsAway += `<option value="${t.name}">${t.name}</option>`;
+                }
+            });
+
+            document.getElementById('admin-home-select').innerHTML = optionsHome;
+            document.getElementById('admin-away-select').innerHTML = optionsAway;
+        };
+
+        window.loadAdminMatchesList = function() {
+            if (!isAdmin) return;
+            
+            const filterDay = document.getElementById('admin-filter-day').value;
+            let matchdaysSet = new Set();
+            allMatchesCache.forEach(m => matchdaysSet.add(m.matchday || 1));
+            let sortedDays = Array.from(matchdaysSet).sort((a, b) => a - b);
+            
+            let filterHtml = '<option value="all">Toutes les journées</option>';
+            sortedDays.forEach(d => {
+                filterHtml += `<option value="${d}" ${filterDay == d ? 'selected' : ''}>Journée ${d}</option>`;
+            });
+            document.getElementById('admin-filter-day').innerHTML = filterHtml;
+
+            let filteredMatches = allMatchesCache.filter(m => {
+                if (filterDay === 'all') return true;
+                return (m.matchday || 1) == filterDay;
+            });
+
+            filteredMatches.sort((a, b) => {
+                if ((a.matchday || 1) !== (b.matchday || 1)) return (b.matchday || 1) - (a.matchday || 1);
+                return new Date(`${a.matchDate}T${a.matchTime}`) - new Date(`${b.matchDate}T${b.matchTime}`);
+            });
+
+            let adminMatchesHtml = "";
+            const now = new Date();
+
+            filteredMatches.forEach(match => {
+                const matchDateTime = new Date(`${match.matchDate}T${match.matchTime}`);
+                const hasStarted = now >= matchDateTime;
+
+                adminMatchesHtml += `
+                    <div class="bg-slate-200/60 dark:bg-slate-950 p-4 rounded-xl border border-slate-300 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <div class="text-sm">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <span class="bg-slate-200 dark:bg-slate-900 text-amber-600 dark:text-amber-400 px-2.5 py-0.5 rounded-md text-[11px] font-bold border border-slate-300 dark:border-slate-800">J${match.matchday || 1}</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">${match.matchDate} à ${match.matchTime}</span>
+                                <span class="text-[11px] font-semibold ${match.status === 'finished' ? 'text-rose-500 dark:text-rose-400' : (hasStarted ? 'text-amber-500 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400')}">
+                                    ${match.status === 'finished' ? '• Clôturé' : (hasStarted ? '• En cours' : '• À venir')}
+                                </span>
+                            </div>
+                            <span class="font-bold text-slate-900 dark:text-white">${match.homeTeam} vs ${match.awayTeam}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="number" id="real-home-${match.id}" min="0" value="${match.homeScore !== null ? match.homeScore : ''}" class="w-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-center py-1.5 rounded-lg font-bold text-slate-900 dark:text-white text-sm" placeholder="H">
+                            <span class="text-slate-500">-</span>
+                            <input type="number" id="real-away-${match.id}" min="0" value="${match.awayScore !== null ? match.awayScore : ''}" class="w-12 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-center py-1.5 rounded-lg font-bold text-slate-900 dark:text-white text-sm" placeholder="A">
+                            <button onclick="closeMatch('${match.id}')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition shadow">Clôturer</button>
+                            <button onclick="deleteMatch('${match.id}')" class="bg-rose-500/10 hover:bg-rose-500 text-rose-500 dark:text-rose-400 hover:text-white px-2.5 py-1.5 rounded-lg text-xs transition border border-rose-500/20"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('admin-matches-list').innerHTML = adminMatchesHtml || '<p class="text-slate-500 text-center text-xs py-2">Aucun match trouvé.</p>';
+        };
+
+        function initLeaderboardListener() {
+            onSnapshot(collection(db, "users"), (snapshot) => {
+                let usersList = [];
+                allUsersMap = {};
+
+                snapshot.forEach((docUser) => {
+                    const uId = docUser.id;
+                    const u = docUser.data();
+                    allUsersMap[uId] = { pseudo: u.pseudo || u.email.split('@')[0], avatar: u.avatar || '⚽' };
+
+                    if (currentUser && uId === currentUser.uid) {
+                        const currentScore = u.score || 0;
+                        document.getElementById('profile-display-score').innerText = currentScore;
+                    }
+
+                    if (u.email && u.email.trim().toLowerCase() !== ADMIN_EMAIL.trim().toLowerCase()) {
+                        usersList.push({
+                            pseudo: u.pseudo || u.email.split('@')[0],
+                            avatar: u.avatar || '⚽',
+                            score: u.score !== undefined ? Number(u.score) : 0
+                        });
+                    }
+                });
+
+                usersList.sort((a, b) => b.score - a.score);
+                cachedLeaderboard = usersList;
+
+                let leaderboardHtml = "";
+                let rank = 1;
+                usersList.forEach(u => {
+                    let medalColor = "text-slate-500 dark:text-slate-400";
+                    if (rank === 1) medalColor = "text-amber-500 dark:text-amber-400 font-black";
+                    else if (rank === 2) medalColor = "text-slate-700 dark:text-slate-300 font-bold";
+                    else if (rank === 3) medalColor = "text-amber-700 dark:text-amber-600 font-bold";
+
+                    let avatarDisplay = '';
+                    if (u.avatar.startsWith('data:image')) {
+                        avatarDisplay = `<img src="${u.avatar}" class="w-full h-full object-cover">`;
+                    } else {
+                        avatarDisplay = `<span>${u.avatar}</span>`;
+                    }
+
+                    leaderboardHtml += `
+                        <tr class="hover:bg-slate-200/50 dark:hover:bg-slate-800/40 transition">
+                            <td class="p-4 ${medalColor}">#${rank++}</td>
+                            <td class="p-4 flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-xl bg-slate-200 dark:bg-slate-900 flex items-center justify-center text-base border border-slate-300 dark:border-slate-800 shadow-sm overflow-hidden">${avatarDisplay}</div>
+                                <span class="font-semibold text-slate-900 dark:text-white">${u.pseudo}</span>
+                            </td>
+                            <td class="p-4 text-right font-bold text-emerald-600 dark:text-emerald-400 text-base">${u.score} pts</td>
+                        </tr>
+                    `;
+                });
+
+                document.getElementById('leaderboard-body').innerHTML = leaderboardHtml || '<tr><td colspan="3" class="p-4 text-center text-slate-500">Aucun joueur classé.</td></tr>';
+            });
+        }
+
+        async function loadData() {
+            if (!currentUser) return;
+            const predsSnapshot = await getDocs(query(collection(db, "predictions")));
+            const allPredictionsMap = {};
+            const matchPredictionCounts = {};
+
+            let userTotalPreds = 0;
+            let userFinishedPreds = 0;
+            let userSuccessPreds = 0;
+            let userExactScores = 0;
+            let userJokersCount = 0;
+
+            predsSnapshot.forEach(docSnap => {
+                const p = docSnap.data();
+                if (!matchPredictionCounts[p.matchId]) {
+                    matchPredictionCounts[p.matchId] = { homeWins: 0, draws: 0, awayWins: 0, total: 0, scoresMap: {} };
+                }
+                const stats = matchPredictionCounts[p.matchId];
+                stats.total++;
+                
+                if (p.homeScore > p.awayScore) stats.homeWins++;
+                else if (p.homeScore < p.awayScore) stats.awayWins++;
+                else stats.draws++;
+
+                const scoreKey = `${p.homeScore}-${p.awayScore}`;
+                stats.scoresMap[scoreKey] = (stats.scoresMap[scoreKey] || 0) + 1;
+
+                if (p.userId === currentUser.uid) {
+                    if (!allPredictionsMap[p.matchId]) allPredictionsMap[p.matchId] = {};
+                    allPredictionsMap[p.matchId] = { home: p.homeScore, away: p.awayScore, isJoker: p.isJoker || false };
+                    userTotalPreds++;
+                    if (p.isJoker) userJokersCount++;
+                }
+            });
+
+            let userPredictions = allPredictionsMap;
+            let hasExactScore = false;
+            let hasUsedJoker = userJokersCount > 0;
+            let totalPredsCount = userTotalPreds;
+
+            const winnerDocSnap = await getDoc(doc(db, "tournament_winners", currentUser.uid));
+            if (winnerDocSnap.exists()) {
+                const pickedTeam = winnerDocSnap.data().teamName;
+                const userSelect = document.getElementById('user-winner-select');
+                if (userSelect) userSelect.value = pickedTeam;
+                const statusMsg = document.getElementById('winner-status-msg');
+                if (statusMsg) statusMsg.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 dark:text-emerald-400 mr-1"></i> Équipe pronostiquée : ${pickedTeam}`;
+            }
+
+            onSnapshot(collection(db, "matches"), async (snapshot) => {
+                let matchesHtml = "";
+                let matchdaysSet = new Set();
+                let historyHtml = "";
+                let finishedMatchesMap = {};
+                const now = new Date();
+                const matchesMap = {};
+
+                snapshot.forEach((matchDoc) => {
+                    const match = matchDoc.data();
+                    const matchId = matchDoc.id;
+                    matchesMap[matchId] = match;
+                    const mDay = match.matchday || 1;
+                    matchdaysSet.add(mDay);
+
+                    if (match.status === 'finished') {
+                        finishedMatchesMap[matchId] = { home: match.homeScore, away: match.awayScore };
+                    }
+                });
+
+                for (let mId in userPredictions) {
+                    const p = userPredictions[mId];
+                    const fm = finishedMatchesMap[mId];
+                    if (fm !== undefined) {
+                        userFinishedPreds++;
+                        const mH = fm.home;
+                        const mA = fm.away;
+                        const pH = p.home;
+                        const pA = p.away;
+
+                        const realOutcome = mH > mA ? 'home' : (mH < mA ? 'away' : 'draw');
+                        const predOutcome = pH > pA ? 'home' : (pH < pA ? 'away' : 'draw');
+
+                        if (pH === mH && pA === mA) {
+                            userExactScores++;
+                            hasExactScore = true;
+                            userSuccessPreds++;
+                        } else if (realOutcome === predOutcome) {
+                            userSuccessPreds++;
+                        }
+                    }
+                }
+
+                let successRate = userFinishedPreds > 0 ? Math.round((userSuccessPreds / userFinishedPreds) * 100) : 0;
+                document.getElementById('prof-stat-total').innerText = userTotalPreds;
+                document.getElementById('prof-stat-success').innerText = successRate + '%';
+                document.getElementById('prof-stat-exacts').innerText = userExactScores;
+                document.getElementById('prof-stat-jokers').innerText = userJokersCount;
+
+                snapshot.forEach((matchDoc) => {
+                    const match = matchDoc.data();
+                    const matchId = matchDoc.id;
+                    const mDay = match.matchday || 1;
+
+                    const matchMatchesFilter = !selectedTeamFilter || match.homeTeam === selectedTeamFilter || match.awayTeam === selectedTeamFilter;
+
+                    if ((selectedTeamFilter && matchMatchesFilter) || (!selectedTeamFilter && mDay === currentMatchday)) {
+                        const userP = userPredictions[matchId] || { home: 0, away: 0, isJoker: false };
+                        const matchDateTime = new Date(`${match.matchDate}T${match.matchTime}`);
+                        const isLocked = now >= matchDateTime || match.status === 'finished';
+                        const hasPredicted = userPredictions[matchId] !== undefined;
+
+                        let barometerHtml = "";
+                        const stats = matchPredictionCounts[matchId];
+                        if (barometerEnabled && isLocked && stats && stats.total > 0) {
+                            const homePct = Math.round((stats.homeWins / stats.total) * 100);
+                            const drawPct = Math.round((stats.draws / stats.total) * 100);
+                            const awayPct = 100 - (homePct + drawPct);
+
+                            let consensusScore = "-";
+                            let maxCount = 0;
+                            for (let sk in stats.scoresMap) {
+                                if (stats.scoresMap[sk] > maxCount) {
+                                    maxCount = stats.scoresMap[sk];
+                                    consensusScore = sk;
+                                }
+                            }
+
+                            barometerHtml = `
+                                <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/80 space-y-2">
+                                    <div class="flex justify-between items-center text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
+                                        <span><i class="fa-solid fa-chart-bar mr-1 text-emerald-600 dark:text-emerald-400"></i> Baromètre de la ligue (${stats.total} pronos)</span>
+                                        <span>Consensus : <strong class="text-emerald-600 dark:text-emerald-400">${consensusScore}</strong></span>
+                                    </div>
+                                    <div class="w-full bg-slate-200 dark:bg-slate-900 rounded-full h-2.5 flex overflow-hidden border border-slate-300 dark:border-slate-800">
+                                        <div style="width: ${homePct}%" class="bg-emerald-500 h-full" title="Victoire Domicile: ${homePct}%"></div>
+                                        <div style="width: ${drawPct}%" class="bg-amber-500 h-full" title="Nul: ${drawPct}%"></div>
+                                        <div style="width: ${awayPct}%" class="bg-blue-500 h-full" title="Victoire Extérieur: ${awayPct}%"></div>
+                                    </div>
+                                    <div class="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
+                                        <span class="text-emerald-600 dark:text-emerald-400">1 (${homePct}%)</span>
+                                        <span class="text-amber-600 dark:text-amber-400">N (${drawPct}%)</span>
+                                        <span class="text-blue-600 dark:text-blue-400">2 (${awayPct}%)</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        matchesHtml += `
+                            <div class="glass-card p-5 rounded-2xl flex flex-col justify-between gap-4 transition hover:border-slate-400 dark:hover:border-slate-700">
+                                <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
+                                    <div class="text-center sm:text-left w-full sm:w-auto">
+                                        <div class="flex items-center justify-center sm:justify-start space-x-2 text-[11px] text-slate-500 dark:text-slate-400 mb-1.5 font-medium">
+                                            <span class="bg-slate-200 dark:bg-slate-900 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-300 dark:border-slate-800">J${match.matchday || 1}</span>
+                                            <span><i class="fa-regular fa-calendar mr-1"></i>${match.matchDate} à ${match.matchTime}</span>
+                                            <span>•</span>
+                                            <span class="${match.status === 'finished' ? 'text-rose-500 dark:text-rose-400 font-semibold' : (isLocked ? 'text-amber-500 dark:text-amber-400 font-semibold' : 'text-emerald-600 dark:text-emerald-400')}">
+                                                ${match.status === 'finished' ? 'Terminé' : (isLocked ? 'Verrouillé' : 'Pronos ouverts')}
+                                            </span>
+                                        </div>
+                                        <div class="text-base font-bold text-slate-900 dark:text-white">${match.homeTeam} <span class="text-slate-400 font-normal mx-1">vs</span> ${match.awayTeam}</div>
+                                        ${match.status === 'finished' ? `<div class="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 inline-block px-2.5 py-1 rounded-lg font-semibold mt-2 border border-emerald-500/20">Score réel : ${match.homeScore} - ${match.awayScore}</div>` : ''}
+                                    </div>
+                                    <div class="flex flex-col items-center sm:items-end gap-2 w-full sm:w-auto">
+                                        <div class="flex items-center space-x-2.5">
+                                            <button type="button" id="joker-btn-${matchId}" onclick="toggleJoker('${matchId}')" title="Activer le Joker x2 pour cette journée" class="px-2.5 py-2 rounded-xl text-xs font-bold transition border ${userP.isJoker ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20' : 'bg-slate-200 dark:bg-slate-900 text-slate-500 border-slate-300 dark:border-slate-700 hover:text-slate-800 dark:hover:text-slate-300'}" ${isLocked ? 'disabled' : ''}>
+                                                <i class="fa-solid fa-bolt"></i>
+                                            </button>
+                                            <input type="number" id="p-home-${matchId}" min="0" value="${userP.home !== undefined ? userP.home : 0}" class="w-16 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center py-2 rounded-xl font-bold text-slate-900 dark:text-white text-base focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" ${isLocked ? 'disabled' : ''}>
+                                            <span class="text-slate-500 font-bold">-</span>
+                                            <input type="number" id="p-away-${matchId}" min="0" value="${userP.away !== undefined ? userP.away : 0}" class="w-16 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center py-2 rounded-xl font-bold text-slate-900 dark:text-white text-base focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" ${isLocked ? 'disabled' : ''}>
+                                            ${!isLocked ? `<button onclick="savePrediction('${matchId}')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-4 py-2.5 rounded-xl font-bold text-xs transition shadow-md shadow-emerald-500/10">Valider</button>` : '<span class="text-xs text-slate-500 italic px-2">Fermé</span>'}
+                                        </div>
+                                        <div class="flex items-center justify-between w-full mt-1">
+                                            <div id="status-msg-${matchId}" class="text-[11px] font-medium ${hasPredicted ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'}">
+                                                ${hasPredicted ? '<i class="fa-solid fa-circle-check mr-1"></i> Pronostic validé' : '<i class="fa-solid fa-circle-exclamation mr-1"></i> Aucun pronostic'}
+                                            </div>
+                                            ${isLocked ? `<button onclick="viewMatchPredictions('${matchId}', '${match.homeTeam} vs ${match.awayTeam}')" class="text-[11px] bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700 transition flex items-center space-x-1"><i class="fa-solid fa-eye"></i><span>Voir les pronos</span></button>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                ${barometerHtml}
+                            </div>
+                        `;
+                    }
+                });
+
+                const userDocSnap = await getDoc(doc(db, "users", currentUser.uid));
+                const currentScore = userDocSnap.exists() ? (userDocSnap.data().score || 0) : 0;
+
+                const badgesHtml = `
+                    <div class="p-3 rounded-2xl border text-center transition ${hasExactScore ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-300' : 'bg-slate-200/40 dark:bg-slate-950/40 border-slate-300 dark:border-slate-800 text-slate-400 dark:text-slate-600'}">
+                        <i class="fa-solid fa-bullseye text-lg mb-1"></i>
+                        <span class="block text-[10px] font-bold uppercase">Sniper</span>
+                        <span class="text-[9px] opacity-80">${hasExactScore ? 'Débloqué' : 'Verrouillé'}</span>
+                    </div>
+                    <div class="p-3 rounded-2xl border text-center transition ${currentScore >= 10 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-300' : 'bg-slate-200/40 dark:bg-slate-950/40 border-slate-300 dark:border-slate-800 text-slate-400 dark:text-slate-600'}">
+                        <i class="fa-solid fa-hat-wizard text-lg mb-1"></i>
+                        <span class="block text-[10px] font-bold uppercase">Oracle</span>
+                        <span class="text-[9px] opacity-80">${currentScore >= 10 ? 'Débloqué' : '10 pts requis'}</span>
+                    </div>
+                    <div class="p-3 rounded-2xl border text-center transition ${hasUsedJoker ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400' : 'bg-slate-200/40 dark:bg-slate-950/40 border-slate-300 dark:border-slate-800 text-slate-400 dark:text-slate-600'}">
+                        <i class="fa-solid fa-bolt text-lg mb-1"></i>
+                        <span class="block text-[10px] font-bold uppercase">Stratège</span>
+                        <span class="text-[9px] opacity-80">${hasUsedJoker ? 'Débloqué' : 'Verrouillé'}</span>
+                    </div>
+                    <div class="p-3 rounded-2xl border text-center transition ${totalPredsCount > 0 ? 'bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-300' : 'bg-slate-200/40 dark:bg-slate-950/40 border-slate-300 dark:border-slate-800 text-slate-400 dark:text-slate-600'}">
+                        <i class="fa-solid fa-rocket text-lg mb-1"></i>
+                        <span class="block text-[10px] font-bold uppercase">Parieur</span>
+                        <span class="text-[9px] opacity-80">${totalPredsCount > 0 ? 'Débloqué' : 'Verrouillé'}</span>
+                    </div>
+                `;
+                document.getElementById('badges-container').innerHTML = badgesHtml;
+
+                const sortedPredKeys = Object.keys(userPredictions);
+                if (sortedPredKeys.length === 0) {
+                    historyHtml = '<p class="text-xs text-slate-500 text-center py-4">Aucun pronostic enregistré pour le moment.</p>';
+                } else {
+                    sortedPredKeys.forEach(mId => {
+                        const m = matchesMap[mId];
+                        const p = userPredictions[mId];
+                        if (m) {
+                            historyHtml += `
+                                <div class="bg-slate-100 dark:bg-slate-900/80 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-2">
+                                    <div class="text-xs">
+                                        <div class="flex items-center space-x-2 text-slate-500 dark:text-slate-400 mb-1 font-semibold">
+                                            <span class="bg-slate-200 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded text-[10px]">J${m.matchday || 1}</span>
+                                            <span>${m.matchDate}</span>
+                                            ${p.isJoker ? '<span class="text-amber-600 dark:text-amber-400 font-bold"><i class="fa-solid fa-bolt"></i> Joker x2</span>' : ''}
+                                        </div>
+                                        <span class="font-bold text-slate-900 dark:text-white">${m.homeTeam} vs ${m.awayTeam}</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <div class="text-right">
+                                            <span class="block text-[10px] text-slate-500 dark:text-slate-400 uppercase">Mon prono</span>
+                                            <span class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">${p.home} - ${p.away}</span>
+                                        </div>
+                                        ${m.status === 'finished' ? `
+                                            <div class="border-l border-slate-200 dark:border-slate-800 pl-3 text-right">
+                                                <span class="block text-[10px] text-slate-500 dark:text-slate-400 uppercase">Score réel</span>
+                                                <span class="font-bold text-slate-900 dark:text-white text-sm">${m.homeScore} - ${m.awayScore}</span>
+                                            </div>
+                                        ` : '<span class="text-[11px] text-amber-600 dark:text-amber-400 italic bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">En attente</span>'}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+                document.getElementById('profile-history-list').innerHTML = historyHtml;
+
+                const sortedMatchdays = Array.from(matchdaysSet).sort((a, b) => a - b);
+                if (sortedMatchdays.length === 0) sortedMatchdays.push(1);
+                if (!sortedMatchdays.includes(currentMatchday)) currentMatchday = sortedMatchdays[0];
+
+                let matchdaysHtml = "";
+                sortedMatchdays.forEach(day => {
+                    const isActive = day === currentMatchday && !selectedTeamFilter;
+                    matchdaysHtml += `<button onclick="switchMatchday(${day})" class="px-4 py-2 rounded-xl text-xs font-bold transition ${isActive ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20' : 'glass-card text-slate-700 dark:text-slate-300 hover:border-slate-400 dark:hover:border-slate-700'}">Journée ${day}</button>`;
+                });
+                document.getElementById('matchdays-tabs').innerHTML = matchdaysHtml;
+                document.getElementById('matches-list').innerHTML = matchesHtml || `<p class="text-slate-500 text-center py-10 text-sm">Aucun match trouvé.</p>`;
+            });
+        }
+
+        window.toggleJoker = function(matchId) {
+            const currentBtn = document.getElementById(`joker-btn-${matchId}`);
+            const isActive = currentBtn.classList.contains('bg-amber-500');
+
+            document.querySelectorAll('[id^="joker-btn-"]').forEach(btn => {
+                btn.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition border bg-slate-200 dark:bg-slate-900 text-slate-500 border-slate-300 dark:border-slate-700 hover:text-slate-800 dark:hover:text-slate-300";
+            });
+
+            if (!isActive) {
+                currentBtn.className = "px-2.5 py-2 rounded-xl text-xs font-bold transition border bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20";
+            }
+        };
+
+        window.savePrediction = async function(matchId) {
+            const matchDocRef = doc(db, "matches", matchId);
+            const matchSnap = await getDoc(matchDocRef);
+            if (matchSnap.exists()) {
+                const matchData = matchSnap.data();
+                const matchDateTime = new Date(`${matchData.matchDate}T${matchData.matchTime}`);
+                
+                if (new Date() >= matchDateTime || matchData.status === 'finished') {
+                    alert("Le match a déjà débuté ou est terminé. Modification impossible.");
+                    loadData();
+                    return;
+                }
+            }
+            const home = parseInt(document.getElementById(`p-home-${matchId}`).value);
+            const away = parseInt(document.getElementById(`p-away-${matchId}`).value);
+            const isJoker = document.getElementById(`joker-btn-${matchId}`).classList.contains('bg-amber-500');
+
+            if (isNaN(home) || isNaN(away) || home < 0 || away < 0) {
+                alert("Veuillez entrer des scores valides (pas de négatif).");
+                return;
+            }
+
+            await setDoc(doc(db, "predictions", `${matchId}_${currentUser.uid}`), { 
+                matchId, 
+                userId: currentUser.uid, 
+                homeScore: home, 
+                awayScore: away, 
+                isJoker: isJoker 
+            });
+            
+            const statusEl = document.getElementById(`status-msg-${matchId}`);
+            if(statusEl) {
+                statusEl.className = "text-[11px] font-medium text-emerald-600 dark:text-emerald-400";
+                statusEl.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i> Pronostic validé ' + (isJoker ? '(⚡ Joker actif)' : '');
+            }
+            alert("Score validé avec succès !" + (isJoker ? " (Votre Joker x2 est activé sur ce match)" : ""));
+        };
+
+        window.createMatch = async function(event) {
+            event.preventDefault();
+            if (!isAdmin) return;
+            const home = document.getElementById('admin-home-select').value;
+            const away = document.getElementById('admin-away-select').value;
+
+            if (!home || !away) { alert("Veuillez sélectionner les deux équipes."); return; }
+            if (home === away) { alert("Une équipe ne peut pas jouer contre elle-même."); return; }
+
+            await addDoc(collection(db, "matches"), {
+                matchday: parseInt(document.getElementById('admin-matchday').value),
+                matchDate: document.getElementById('admin-date').value,
+                matchTime: document.getElementById('admin-time').value,
+                homeTeam: home,
+                awayTeam: away,
+                status: 'pending',
+                homeScore: null,
+                awayScore: null
+            });
+
+            alert("Match planifié avec succès !");
+            updateTeamsDropdowns();
+        };
+
+        window.deleteMatch = async function(matchId) {
+            if (!isAdmin) return;
+            if (confirm("Voulez-vous vraiment supprimer ce match ?")) {
+                await deleteDoc(doc(db, "matches", matchId));
+                alert("Match supprimé.");
+            }
+        };
+
+        window.closeMatch = async function(matchId) {
+            if (!isAdmin) return;
+            const homeScoreInput = document.getElementById(`real-home-${matchId}`).value;
+            const awayScoreInput = document.getElementById(`real-away-${matchId}`).value;
+            
+            const homeScore = parseInt(homeScoreInput);
+            const awayScore = parseInt(awayScoreInput);
+
+            if (homeScoreInput === "" || awayScoreInput === "" || isNaN(homeScore) || isNaN(awayScore) || homeScore < 0 || awayScore < 0) {
+                alert("Saisissez un score réel valide.");
+                return;
+            }
+
+            const matchRef = doc(db, "matches", matchId);
+            const matchSnap = await getDoc(matchRef);
+            const matchData = matchSnap.data();
+
+            await updateDoc(matchRef, { status: 'finished', homeScore, awayScore });
+
+            const allMatchesSnapshot = await getDocs(collection(db, "matches"));
+            const finishedMatches = {};
+            allMatchesSnapshot.forEach(mDoc => {
+                const mData = mDoc.data();
+                if (mData.status === 'finished') {
+                    finishedMatches[mDoc.id] = { home: mData.homeScore, away: mData.awayScore };
+                }
+            });
+
+            const winnersSnapshot = await getDocs(collection(db, "tournament_winners"));
+            const userTournamentPicks = {};
+            winnersSnapshot.forEach(docSnap => {
+                userTournamentPicks[docSnap.data().userId] = docSnap.data().teamName;
+            });
+
+            const configSnap = await getDoc(doc(db, "settings", "config"));
+            const realWinningTeam = (configSnap.exists() && configSnap.data().winningTeam) ? configSnap.data().winningTeam : null;
+
+            const usersSnapshot = await getDocs(collection(db, "users"));
+            const updatePromises = [];
+
+            for (const userDocSnap of usersSnapshot.docs) {
+                const userId = userDocSnap.id;
+                const userEmail = userDocSnap.data().email || "";
+                
+                if (userEmail.trim().toLowerCase() === ADMIN_EMAIL.trim().toLowerCase()) continue;
+
+                const userPreds = await getDocs(query(collection(db, "predictions"), where("userId", "==", userId)));
+                let totalUserScore = 0;
+
+                userPreds.forEach(predDoc => {
+                    const pred = predDoc.data();
+                    const matchResult = finishedMatches[pred.matchId];
+
+                    if (matchResult) {
+                        const mH = matchResult.home;
+                        const mA = matchResult.away;
+                        const pH = pred.homeScore;
+                        const pA = pred.awayScore;
+
+                        const realOutcome = mH > mA ? 'home' : (mH < mA ? 'away' : 'draw');
+                        const predOutcome = pH > pA ? 'home' : (pH < pA ? 'away' : 'draw');
+                        const realDiff = mH - mA;
+                        const predDiff = pH - pA;
+
+                        let matchPoints = 0;
+                        if (pH === mH && pA === mA) matchPoints = 5;
+                        else if (realOutcome === predOutcome && realDiff === predDiff) matchPoints = 3;
+                        else if (realOutcome === predOutcome) matchPoints = 2;
+                        else if (pH === mH || pA === mA) matchPoints = 1;
+                        else matchPoints = 0;
+
+                        if (pred.isJoker) {
+                            matchPoints *= 2;
+                        }
+
+                        totalUserScore += matchPoints;
+                    }
+                });
+
+                if (realWinningTeam && userTournamentPicks[userId] === realWinningTeam) {
+                    totalUserScore += 10;
+                }
+
+                updatePromises.push(updateDoc(doc(db, "users", userId), { score: totalUserScore }));
+            }
+
+            await Promise.all(updatePromises);
+
+            await addDoc(collection(db, "notifications"), {
+                title: "⚽ Match Clôturé",
+                message: `Le résultat de ${matchData.homeTeam} vs ${matchData.awayTeam} (${homeScore}-${awayScore}) a été validé et les points ont été recalculés !`,
+                createdAt: new Date().toISOString()
+            });
+
+            alert("Match clôturé avec succès ! Le barème a été appliqué et le classement général a été recalculé.");
+        };
+    </script>
+</body>
+</html>
